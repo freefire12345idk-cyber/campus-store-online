@@ -16,6 +16,9 @@ body {
   @apply text-slate-100 antialiased;
   background-color: #050505;
   cursor: none;
+  /* Performance optimizations */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .neon-cursor {
@@ -31,6 +34,10 @@ body {
   pointer-events: none;
   z-index: 9999;
   transition: width 0.15s ease, height 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  /* Performance optimizations */
+  will-change: transform, width, height;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .neon-cursor.hover {

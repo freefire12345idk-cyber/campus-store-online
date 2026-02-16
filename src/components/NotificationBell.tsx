@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 type Notification = {
@@ -18,13 +18,7 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const res = await fetch("/api/notifications?unreadOnly=true");
       if (res.ok) {
@@ -37,19 +31,25 @@ export default function NotificationBell() {
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     }
-  };
+  }, []);
 
   const fetchAllNotifications = async () => {
     try {
       const res = await fetch("/api/notifications");
       if (res.ok) {
-        const all = await res.json();
-        setNotifications(all.slice(0, 10)); // Show latest 10
+        const data = await res.json();
+        setNotifications(data);
       }
     } catch (error) {
       console.error("Failed to fetch all notifications:", error);
     }
   };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
     try {
