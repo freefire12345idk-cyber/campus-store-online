@@ -116,6 +116,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   
+  // Skip static generation for API routes
+  trailingSlash: false,
+  exportPathMap: false,
+  
   // Output configuration
   output: 'standalone',
   

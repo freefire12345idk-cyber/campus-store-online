@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
-  const colleges = await prisma.college.findMany({ orderBy: { name: "asc" } });
-  return NextResponse.json(colleges);
+  try {
+    const colleges = await prisma.college.findMany({ orderBy: { name: "asc" } });
+    return NextResponse.json(colleges);
+  } catch (error) {
+    console.error("Database error in /api/colleges:", error);
+    // Return empty array if database is not available during build
+    return NextResponse.json([]);
+  }
 }
