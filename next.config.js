@@ -25,7 +25,6 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '5mb',
     },
-    appDir: true,
   },
   
   // Performance headers

@@ -61,16 +61,29 @@ async function main() {
         const password = await bcrypt.hash("Student@123", 10);
         const createdUser = await prisma.user.create({
           data: {
+            email: "student@seed.com",
             phone: "9000000000",
             password,
             role: "student",
             name: "Seed Student",
-            student: { create: { collegeId: studentCollegeId } },
+            student: { 
+              create: { 
+                collegeId: studentCollegeId,
+                section: "A",
+                hostelBranch: "CSE",
+                rollNo: "2021UCS001"
+              } 
+            },
           },
-          include: { student: true },
         });
-        studentId = createdUser.student?.id || null;
-        studentCollegeId = createdUser.student?.collegeId || studentCollegeId;
+        
+        const userWithStudent = await prisma.user.findUnique({
+          where: { id: createdUser.id },
+          include: { student: true }
+        });
+        
+        studentId = userWithStudent?.student?.id || null;
+        studentCollegeId = userWithStudent?.student?.collegeId || studentCollegeId;
       }
       if (studentId && studentCollegeId) {
         for (const shop of shops) {
