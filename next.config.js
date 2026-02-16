@@ -21,7 +21,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['framer-motion', 'recharts', 'zod'],
     serverComponentsExternalPackages: ['bcryptjs'],
-    optimizeCss: true,
+    optimizeCss: false,
     serverActions: {
       bodySizeLimit: '5mb',
     },
