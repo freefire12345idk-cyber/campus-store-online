@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --campus-primary: #22d3ee;
+  --campus-secondary: #a855f7;
+  --campus-accent: #f472b6;
+  --neon-cyan: #22d3ee;
+  --neon-purple: #a855f7;
+  --neon-pink: #f472b6;
+  --neon-blue: #38bdf8;
+}
+
+body {
+  @apply text-slate-100 antialiased;
+  background-color: #050505;
+  cursor: none;
+}
+
+.neon-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.9);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.8), 0 0 32px rgba(168, 85, 247, 0.5);
+  transform: translate3d(-50%, -50%, 0);
+  pointer-events: none;
+  z-index: 9999;
+  transition: width 0.15s ease, height 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.neon-cursor.hover {
+  width: 26px;
+  height: 26px;
+  background: rgba(244, 114, 182, 0.95);
+  box-shadow: 0 0 22px rgba(244, 114, 182, 0.9), 0 0 38px rgba(34, 211, 238, 0.6);
+}
+
+.neon-cursor-trail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.35), transparent 65%);
+  transform: translate3d(-50%, -50%, 0);
+  pointer-events: none;
+  z-index: 9998;
+  mix-blend-mode: screen;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50;
+    border: 1px solid rgba(34, 211, 238, 0.45);
+    box-shadow: 0 0 14px rgba(34, 211, 238, 0.2), inset 0 0 18px rgba(59, 130, 246, 0.08);
+  }
+  .btn-primary {
+    @apply btn text-white focus:ring-cyan-300;
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.9), rgba(168, 85, 247, 0.9));
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.35), 0 0 28px rgba(168, 85, 247, 0.2);
+  }
+  .btn-secondary {
+    @apply btn bg-slate-900/70 text-slate-100 focus:ring-fuchsia-300;
+    border: 1px solid rgba(244, 114, 182, 0.45);
+    box-shadow: 0 0 16px rgba(244, 114, 182, 0.2);
+  }
+  .card {
+    @apply rounded-2xl border border-slate-800/60 bg-slate-900/70 p-4 shadow-sm backdrop-blur-xl;
+    box-shadow: 0 0 24px rgba(34, 211, 238, 0.08);
+  }
+  .input {
+    @apply w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-slate-100 focus:border-campus-primary focus:outline-none focus:ring-1 focus:ring-campus-primary focus:shadow-[0_0_14px_rgba(34,211,238,0.35)];
+  }
+  .glass-card {
+    @apply rounded-2xl border border-cyan-300/30 bg-slate-950/60 p-6 shadow-lg backdrop-blur-2xl;
+    box-shadow: 0 0 32px rgba(34, 211, 238, 0.2), inset 0 0 20px rgba(168, 85, 247, 0.12);
+  }
+  .glass-chip {
+    @apply inline-flex items-center rounded-full border border-slate-700/60 bg-slate-950/70 px-2.5 py-0.5 text-xs text-slate-100 backdrop-blur;
+  }
+  .neon-text {
+    color: #ffffff;
+    text-shadow: 0 0 14px rgba(34, 211, 238, 0.65), 0 0 28px rgba(56, 189, 248, 0.5);
+  }
+  .neon-title {
+    color: #ffffff;
+    text-shadow: 0 0 16px rgba(56, 189, 248, 0.7), 0 0 36px rgba(34, 211, 238, 0.55);
+  }
+  .neon-btn {
+    @apply inline-flex items-center justify-center rounded-xl px-5 py-2.5 font-semibold transition focus:outline-none disabled:opacity-60;
+    border: 1px solid color-mix(in oklab, var(--neon-color, #22d3ee) 70%, transparent);
+    box-shadow: 0 0 15px color-mix(in oklab, var(--neon-color, #22d3ee) 60%, transparent);
+  }
+  .neon-btn-primary {
+    color: #0b1220;
+    background: linear-gradient(135deg, color-mix(in oklab, var(--neon-color, #22d3ee) 85%, #ffffff 15%), #8b5cf6);
+  }
+  .neon-btn-secondary {
+    color: #e2e8f0;
+    background: rgba(15, 23, 42, 0.7);
+  }
+  .neon-btn-ghost {
+    color: #e2e8f0;
+    background: rgba(15, 23, 42, 0.25);
+  }
+}
+
+@layer utilities {
+  .text-stone-900 {
+    color: #f8fafc;
+  }
+  .text-stone-700 {
+    color: #cbd5f5;
+  }
+  .text-stone-600 {
+    color: #b7c5d9;
+  }
+  .text-stone-500 {
+    color: #a5b4c7;
+  }
+  .bg-stone-50 {
+    background-color: #020617;
+  }
+  .bg-white {
+    background-color: rgba(15, 23, 42, 0.7);
+  }
+  .border-stone-200 {
+    border-color: rgba(148, 163, 184, 0.2);
+  }
+  .border-stone-300 {
+    border-color: rgba(148, 163, 184, 0.3);
+  }
+  .cursor-none {
+    cursor: none;
+  }
+  .cursor-target {
+    cursor: none;
+  }
+}
