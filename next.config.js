@@ -25,6 +25,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '5mb',
     },
+    appDir: true,
   },
   
   // Performance headers
@@ -106,13 +107,6 @@ const nextConfig = {
     config.optimization.sideEffects = false
     
     return config
-  },
-  
-  // Enable experimental features
-  experimental: {
-    appDir: true,
-    serverActions: true,
-    incrementalCacheHandlerPath: require.resolve('./cache-handler.js'),
   },
   
   // Output configuration
