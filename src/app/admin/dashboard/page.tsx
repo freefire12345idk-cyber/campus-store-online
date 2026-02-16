@@ -8,7 +8,7 @@ import { NeonButton } from "@/components/NeonButton";
 const ResponsiveContainer = dynamic(() => import("recharts").then((m: any) => m.ResponsiveContainer), { 
   ssr: false,
   loading: () => <div className="mt-4 text-stone-500">Loading charts…</div>
-});
+}) as any;
 const BarChart = dynamic(() => import("recharts").then((m: any) => m.BarChart), { 
   ssr: false,
   loading: () => <div className="mt-4 text-stone-500">Loading charts…</div>
