@@ -50,6 +50,14 @@ export async function POST(req: Request) {
       const existingPhone = await prisma.user.findFirst({ where: { phone: data.phone } });
       if (existingPhone) return NextResponse.json({ error: "Phone already registered" }, { status: 400 });
       
+      // Validate college exists for student registration
+      if (data.collegeId) {
+        const college = await prisma.college.findUnique({ where: { id: data.collegeId } });
+        if (!college) {
+          return NextResponse.json({ error: `College with ID ${data.collegeId} not found. Please select a valid college.` }, { status: 400 });
+        }
+      }
+      
       const hashed = await hashPassword(data.password);
       const user = await prisma.user.create({
         data: {
@@ -89,6 +97,21 @@ export async function POST(req: Request) {
       // Check if phone already exists
       const existingPhone = await prisma.user.findFirst({ where: { phone: data.phone } });
       if (existingPhone) return NextResponse.json({ error: "Phone already registered" }, { status: 400 });
+      
+      // Validate colleges exist for shop owner registration
+      if (data.collegeIds && data.collegeIds.length > 0) {
+        const colleges = await prisma.college.findMany({ 
+          where: { id: { in: data.collegeIds } } 
+        });
+        if (colleges.length !== data.collegeIds.length) {
+          const missingColleges = data.collegeIds.filter(id => 
+            !colleges.some(college => college.id === id)
+          );
+          return NextResponse.json({ 
+            error: `Invalid colleges selected: ${missingColleges.join(', ')}. Please select valid colleges.` 
+          }, { status: 400 });
+        }
+      }
       
       const hashed = await hashPassword(data.password);
       const shop = await prisma.shop.create({
