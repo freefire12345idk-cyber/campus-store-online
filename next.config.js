@@ -12,6 +12,10 @@ const nextConfig = {
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // CDN optimization for high traffic
+    loader: 'custom',
+    loaderFile: './src/lib/image-loader.js',
+    domains: ['images.unsplash.com', 'via.placeholder.com'],
   },
   
   // Enable compression
@@ -27,9 +31,30 @@ const nextConfig = {
     },
   },
   
-  // Performance headers
+  // Performance headers for CDN and caching
   async headers() {
     return [
+      {
+        source: '/api/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=300, s-maxage=600' }, // 5min client, 10min CDN
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+        ],
+      },
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }, // 1 year
+        ],
+      },
+      {
+        source: '/images/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, s-maxage=2592000' }, // 1 day client, 30 days CDN
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
@@ -55,25 +80,7 @@ const nextConfig = {
           }
         ]
       },
-      {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=300, s-maxage=300'
-          }
-        ]
-      },
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      }
-    ]
+    ];
   },
   
   // Redirects for performance
@@ -87,9 +94,9 @@ const nextConfig = {
     ]
   },
   
-  // Webpack optimizations
-  webpack: (config, { isServer }) => {
-    // Optimize chunks
+  // Webpack configuration for optimization
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // Optimize bundle size for high traffic
     config.optimization.splitChunks = {
       chunks: 'all',
       cacheGroups: {
