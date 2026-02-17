@@ -117,14 +117,13 @@ const nextConfig = {
   },
   
   // Skip static generation for API routes
-  trailingSlash: false,
-  exportPathMap: false,
-  
-  // Output configuration
   output: 'standalone',
   
   // Power by header
   poweredByHeader: false,
+  
+  // Disable static optimization for API routes
+  generateEtags: false,
 };
 
 module.exports = nextConfig;
