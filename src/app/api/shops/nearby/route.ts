@@ -47,10 +47,15 @@ export async function GET(req: Request) {
             longitude: true,
             phone: true,
             shopPhoto: true,
-            shopOwner: {
+            owner: {
               select: {
                 id: true,
-                name: true
+                user: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
               }
             }
           },
@@ -61,7 +66,13 @@ export async function GET(req: Request) {
         const nearbyShops = shops.filter(shop => {
           const distance = calculateDistance(lat, lng, shop.latitude, shop.longitude);
           return distance <= 10; // 10km radius
-        }).slice(0, 20); // Limit to 20 results
+        }).slice(0, 20).map(shop => ({
+          ...shop,
+          shopOwner: shop.owner ? {
+            id: shop.owner.id,
+            name: shop.owner.user?.name || 'Unknown'
+          } : null
+        }));
 
         return NextResponse.json(nearbyShops);
       },
