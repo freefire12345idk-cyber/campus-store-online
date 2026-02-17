@@ -1,8 +1,10 @@
+export const runtime = 'nodejs';
+
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/db";
-import crypto from "crypto";
+import { z } from "zod";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 const sendOtpSchema = z.object({
   email: z.string().email(),
@@ -67,9 +69,14 @@ export async function POST(req: Request) {
       const data = sendOtpSchema.parse(body);
       
       // Delete any existing tokens for this email
-      await prisma.verificationToken.deleteMany({
-        where: { email: data.email },
-      });
+      try {
+        await prisma.verificationToken.deleteMany({
+          where: { email: data.email },
+        });
+      } catch (dbError) {
+        console.error("Error deleting verification token:", dbError);
+        // Continue even if deletion fails
+      }
 
       // Generate new OTP
       const token = generateOTP();
