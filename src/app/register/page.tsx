@@ -24,40 +24,30 @@ function RegisterContent() {
   const [role, setRole] = useState<"student" | "shop_owner">(
     roleParam === "shop" ? "shop_owner" : "student"
   );
-  const [colleges, setColleges] = useState<College[]>([]);
+  const [colleges, setColleges] = useState<College[]>([
+    { id: "uit-rgpv", name: "UIT-RGPV" },
+    { id: "sirt", name: "SIRT" },
+    { id: "lnct", name: "LNCT" },
+    { id: "oriental", name: "Oriental Institute" },
+    { id: "tit", name: "TIT" },
+    { id: "sistec", name: "SISTec" }
+  ]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Try to fetch from API, but keep hardcoded colleges as primary source
     fetch("/api/colleges")
       .then((r) => r.json())
       .then((data) => {
-        // If API returns empty, use hardcoded colleges as fallback
-        if (data.length === 0) {
-          const hardcodedColleges = [
-            { id: "uit-rgpv", name: "UIT-RGPV" },
-            { id: "sirt", name: "SIRT" },
-            { id: "lnct", name: "LNCT" },
-            { id: "oriental", name: "Oriental Institute" },
-            { id: "tit", name: "TIT" },
-            { id: "sistec", name: "SISTec" }
-          ];
-          setColleges(hardcodedColleges);
-        } else {
+        // Only use API data if it's not empty
+        if (data.length > 0) {
           setColleges(data);
         }
       })
       .catch(() => {
-        // Always fallback to hardcoded colleges on error
-        const hardcodedColleges = [
-          { id: "uit-rgpv", name: "UIT-RGPV" },
-          { id: "sirt", name: "SIRT" },
-          { id: "lnct", name: "LNCT" },
-          { id: "oriental", name: "Oriental Institute" },
-          { id: "tit", name: "TIT" },
-          { id: "sistec", name: "SISTec" }
-        ];
-        setColleges(hardcodedColleges);
+        // Keep hardcoded colleges on error
+        console.log("Using hardcoded colleges");
       });
   }, []);
 

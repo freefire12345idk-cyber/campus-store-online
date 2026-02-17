@@ -6,18 +6,18 @@ import { useSpring, useMotionValue } from "framer-motion";
 export function NeonCursor() {
   const cursorRef = useRef<HTMLDivElement | null>(null);
   const trailRef = useRef<HTMLDivElement | null>(null);
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
   const trailX = useMotionValue(0);
   const trailY = useMotionValue(0);
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!isClient) return;
+    if (!mounted) return;
     
     const cursor = cursorRef.current;
     const trail = trailRef.current;
@@ -54,7 +54,7 @@ export function NeonCursor() {
     return () => {
       window.removeEventListener("pointermove", onMove);
     };
-  }, [isClient, cursorX, cursorY, trailX, trailY]);
+  }, [mounted, cursorX, cursorY, trailX, trailY]);
 
   // Animate cursor position with spring
   const cursorStyle = useSpring({
@@ -67,7 +67,7 @@ export function NeonCursor() {
     y: trailY as any,
   });
 
-  if (!isClient) {
+  if (!mounted) {
     return null;
   }
 
@@ -77,6 +77,8 @@ export function NeonCursor() {
         ref={trailRef} 
         className="neon-cursor-trail"
         style={{
+          position: 'fixed',
+          pointerEvents: 'none',
           transform: (trailStyle as any).to((x: any, y: any) => `translate3d(${x}px, ${y}px, 0)`),
         }}
       />
@@ -84,8 +86,10 @@ export function NeonCursor() {
         ref={cursorRef} 
         className="neon-cursor"
         style={{
+          position: 'fixed',
+          pointerEvents: 'none',
           transform: (cursorStyle as any).to((x: any, y: any) => `translate3d(${x}px, ${y}px, 0)`),
-          opacity: isClient ? 1 : 0,
+          opacity: mounted ? 1 : 0,
         }}
       />
     </>
