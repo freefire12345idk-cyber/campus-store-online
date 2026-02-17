@@ -74,8 +74,8 @@ export default function HomePage() {
           <h1 className="text-4xl font-bold tracking-tight neon-title sm:text-5xl">
             Order from shops near your college
           </h1>
-          <p className="mt-4 text-lg text-slate-200 leading-relaxed">
-            <span className="block mb-2"><strong>Students:</strong> add items to cart, pay via scanner, get delivery at campus.</span>
+          <p className="mt-4 text-lg text-slate-200 leading-relaxed leading-loose">
+            <span className="block mb-3"><strong>Students:</strong> add items to cart, pay via scanner, get delivery at campus.</span>
             <span className="block"><strong>Shops:</strong> list your store, get orders and deliver to 4–5 colleges.</span>
           </p>
           {!user && (

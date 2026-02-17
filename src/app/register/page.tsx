@@ -31,8 +31,34 @@ function RegisterContent() {
   useEffect(() => {
     fetch("/api/colleges")
       .then((r) => r.json())
-      .then(setColleges)
-      .catch(() => setColleges([]));
+      .then((data) => {
+        // If API returns empty, use hardcoded colleges as fallback
+        if (data.length === 0) {
+          const hardcodedColleges = [
+            { id: "uit-rgpv", name: "UIT-RGPV" },
+            { id: "sirt", name: "SIRT" },
+            { id: "lnct", name: "LNCT" },
+            { id: "oriental", name: "Oriental Institute" },
+            { id: "tit", name: "TIT" },
+            { id: "sistec", name: "SISTec" }
+          ];
+          setColleges(hardcodedColleges);
+        } else {
+          setColleges(data);
+        }
+      })
+      .catch(() => {
+        // Always fallback to hardcoded colleges on error
+        const hardcodedColleges = [
+          { id: "uit-rgpv", name: "UIT-RGPV" },
+          { id: "sirt", name: "SIRT" },
+          { id: "lnct", name: "LNCT" },
+          { id: "oriental", name: "Oriental Institute" },
+          { id: "tit", name: "TIT" },
+          { id: "sistec", name: "SISTec" }
+        ];
+        setColleges(hardcodedColleges);
+      });
   }, []);
 
   const [email, setEmail] = useState("");
