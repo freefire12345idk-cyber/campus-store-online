@@ -380,9 +380,9 @@ function RegisterContent() {
                 <label className="block text-sm font-medium text-stone-700">College *</label>
                 <select value={collegeId} onChange={(e) => setCollegeId(e.target.value)} className="input mt-1" required>
                   <option value="">Select college</option>
-                  {colleges.map((c) => (
+                  {colleges?.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
+                  )) || []}
                 </select>
               </div>
               <div>
@@ -474,31 +474,6 @@ function RegisterContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Shop phone</label>
-                <input type="tel" value={shopPhone} onChange={(e) => setShopPhone(e.target.value)} className="input mt-1" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Colleges we deliver to * (select at least one)</label>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {colleges.map((c) => (
-                    <label key={c.id} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedCollegeIds.includes(c.id)}
-                        onChange={() => toggleCollege(c.id)}
-                      />
-                      <span className="text-sm">{c.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <p className="text-sm text-amber-700 bg-amber-50 rounded-lg p-2">
-                After registration, the site admin will verify your shop. Your shop will be visible to students only after approval.
-              </p>
-            </>
-          )}
-
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <NeonButton type="submit" disabled={loading} className="w-full py-2.5">
             {loading ? "Registering…" : "Register"}
           </NeonButton>
         </form>

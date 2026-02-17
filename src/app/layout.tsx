@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { NeonCursor } from "@/components/NeonCursor";
 import { NeonBackground } from "@/components/NeonBackground";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Campus Store – Order from nearby shops",
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen">
-        <Providers>
-          <NeonBackground />
-          {children}
-          <NeonCursor />
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <NeonBackground />
+            {children}
+            <NeonCursor />
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );
