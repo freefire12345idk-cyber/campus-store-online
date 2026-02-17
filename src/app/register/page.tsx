@@ -25,12 +25,13 @@ function RegisterContent() {
     roleParam === "shop" ? "shop_owner" : "student"
   );
   const [colleges, setColleges] = useState<College[]>([
-    { id: "uit-rgpv", name: "UIT-RGPV" },
-    { id: "sirt", name: "SIRT" },
     { id: "lnct", name: "LNCT" },
-    { id: "oriental", name: "Oriental Institute" },
+    { id: "lnct-s", name: "LNCT-S" },
+    { id: "lnct-e", name: "LNCT-E" },
+    { id: "lnct-u", name: "LNCT-U" },
     { id: "tit", name: "TIT" },
-    { id: "sistec", name: "SISTec" }
+    { id: "oriental", name: "ORIENTAL" },
+    { id: "uit-rgpv", name: "UIT-RGPV" }
   ]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
