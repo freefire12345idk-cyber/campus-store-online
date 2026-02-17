@@ -1,16 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSpring, useMotionValue } from "framer-motion";
 
 export function NeonCursor() {
   const cursorRef = useRef<HTMLDivElement | null>(null);
   const trailRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = useState(false);
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
-  const trailX = useMotionValue(0);
-  const trailY = useMotionValue(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [trailPosition, setTrailPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     setMounted(true);
@@ -24,6 +21,8 @@ export function NeonCursor() {
     if (!cursor || !trail) return;
 
     const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    const pos = { x: target.x, y: target.y };
+    const trailPos = { x: target.x, y: target.y };
 
     const setHover = (hover: boolean) => {
       cursor.classList.toggle("hover", hover);
@@ -43,29 +42,29 @@ export function NeonCursor() {
       cursor.style.setProperty("--cursor-color", color);
       trail.style.setProperty("--cursor-color", color);
       
-      // Update motion values for smooth animation
-      cursorX.set(target.x);
-      cursorY.set(target.y);
-      trailX.set(target.x);
-      trailY.set(target.y);
+      // Update position state
+      setPosition({ x: target.x, y: target.y });
+      setTrailPosition({ x: target.x, y: target.y });
     };
+
+    let raf = 0;
+    const render = () => {
+      pos.x += (target.x - pos.x) * 0.3;
+      pos.y += (target.y - pos.y) * 0.3;
+      trailPos.x += (target.x - trailPos.x) * 0.12;
+      trailPos.y += (target.y - trailPos.y) * 0.12;
+      cursor.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
+      trail.style.transform = `translate3d(${trailPos.x}px, ${trailPos.y}px, 0)`;
+      raf = window.requestAnimationFrame(render);
+    };
+    raf = window.requestAnimationFrame(render);
 
     window.addEventListener("pointermove", onMove);
     return () => {
       window.removeEventListener("pointermove", onMove);
+      window.cancelAnimationFrame(raf);
     };
-  }, [mounted, cursorX, cursorY, trailX, trailY]);
-
-  // Animate cursor position with spring
-  const cursorStyle = useSpring({
-    x: cursorX as any,
-    y: cursorY as any,
-  });
-
-  const trailStyle = useSpring({
-    x: trailX as any,
-    y: trailY as any,
-  });
+  }, [mounted]);
 
   if (!mounted) {
     return null;
@@ -79,7 +78,7 @@ export function NeonCursor() {
         style={{
           position: 'fixed',
           pointerEvents: 'none',
-          transform: (trailStyle as any).to((x: any, y: any) => `translate3d(${x}px, ${y}px, 0)`),
+          transform: `translate3d(${trailPosition.x}px, ${trailPosition.y}px, 0)`,
         }}
       />
       <div 
@@ -88,7 +87,7 @@ export function NeonCursor() {
         style={{
           position: 'fixed',
           pointerEvents: 'none',
-          transform: (cursorStyle as any).to((x: any, y: any) => `translate3d(${x}px, ${y}px, 0)`),
+          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
           opacity: mounted ? 1 : 0,
         }}
       />
