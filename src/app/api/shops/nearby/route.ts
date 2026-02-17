@@ -32,10 +32,8 @@ export async function GET(req: Request) {
           where: {
             isApproved: true,
             ...(collegeId && {
-              shopOwner: {
-                collegeDeliveries: {
-                  some: { collegeId }
-                }
+              shopColleges: {
+                some: { collegeId }
               }
             })
           },
@@ -67,7 +65,13 @@ export async function GET(req: Request) {
           const distance = calculateDistance(lat, lng, shop.latitude, shop.longitude);
           return distance <= 10; // 10km radius
         }).slice(0, 20).map(shop => ({
-          ...shop,
+          id: shop.id,
+          name: shop.name,
+          address: shop.address,
+          latitude: shop.latitude,
+          longitude: shop.longitude,
+          phone: shop.phone,
+          shopPhoto: shop.shopPhoto,
           shopOwner: shop.owner ? {
             id: shop.owner.id,
             name: shop.owner.user?.name || 'Unknown'
