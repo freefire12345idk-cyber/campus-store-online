@@ -474,6 +474,68 @@ function RegisterContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Shop phone</label>
+                <input type="tel" value={shopPhone} onChange={(e) => setShopPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} className="input mt-1" maxLength={10} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Shop location *</label>
+                <NeonButton
+                  type="button"
+                  onClick={() => {
+                    if (!navigator.geolocation) {
+                      setError("Geolocation is not supported");
+                      return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => {
+                        setShopLat(pos.coords.latitude);
+                        setShopLng(pos.coords.longitude);
+                        setError("");
+                      },
+                      () => setError("Failed to get location")
+                    );
+                  }}
+                  neonColor="#22d3ee"
+                  className="w-full py-2"
+                >
+                  Get my location
+                </NeonButton>
+                {shopLat && shopLng && (
+                  <p className="mt-2 text-sm text-green-700">
+                    Location set.{" "}
+                    <a href={`https://www.google.com/maps?q=${shopLat},${shopLng}`} target="_blank" rel="noopener noreferrer" className="text-campus-primary underline">
+                      View on Google Maps
+                    </a>
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Colleges we deliver to * (select at least one)</label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {colleges?.map((c) => (
+                    <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        value={c.id}
+                        checked={selectedCollegeIds.includes(c.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCollegeIds([...selectedCollegeIds, c.id]);
+                          } else {
+                            setSelectedCollegeIds(selectedCollegeIds.filter((id) => id !== c.id));
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm">{c.name}</span>
+                    </label>
+                  )) || []}
+                </div>
+              </div>
+            </>
+          )}
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <NeonButton type="submit" disabled={loading} className="w-full py-2.5">
             {loading ? "Registering…" : "Register"}
           </NeonButton>
         </form>
