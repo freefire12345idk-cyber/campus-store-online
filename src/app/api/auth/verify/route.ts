@@ -125,11 +125,37 @@ export async function POST(req: Request) {
           console.error("Error details:", emailError);
           console.error("Error code:", (emailError as any).code);
           console.error("Error message:", (emailError as any).message);
+          console.error("EMAIL_USER:", process.env.EMAIL_USER ? "SET" : "NOT SET");
+          console.error("EMAIL_PASS:", process.env.EMAIL_PASS ? "SET" : "NOT SET");
+          console.error("EMAIL_HOST:", process.env.EMAIL_HOST);
+          
+          // Still save token to database even if email fails
+          try {
+            await prisma.verificationToken.create({
+              data: {
+                email: data.email,
+                token,
+                expiresAt,
+              },
+            });
+            console.log("✅ Token saved to database despite email failure");
+          } catch (dbError) {
+            console.error("❌ Failed to save token:", dbError);
+          }
           
           // Return 500 error so frontend can see it
           return NextResponse.json({ 
             error: `Email sending failed: ${(emailError as Error).message}`,
-            details: emailError
+            details: emailError,
+            otp: token, // Still provide OTP for testing
+            debug: {
+              emailConfigured: !!process.env.EMAIL_USER,
+              envVars: {
+                EMAIL_USER: !!process.env.EMAIL_USER,
+                EMAIL_PASS: !!process.env.EMAIL_PASS,
+                EMAIL_HOST: !!process.env.EMAIL_HOST
+              }
+            }
           }, { status: 500 });
         }
       } else {
