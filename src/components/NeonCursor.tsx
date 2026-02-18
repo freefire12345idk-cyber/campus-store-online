@@ -53,8 +53,8 @@ export function NeonCursor() {
       pos.y += (target.y - pos.y) * 0.3;
       trailPos.x += (target.x - trailPos.x) * 0.12;
       trailPos.y += (target.y - trailPos.y) * 0.12;
-      cursor.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
-      trail.style.transform = `translate3d(${trailPos.x}px, ${trailPos.y}px, 0)`;
+      cursor.style.transform = `translate3d(${pos.x - 7}px, ${pos.y - 7}px, 0)`;
+      trail.style.transform = `translate3d(${trailPos.x - 14}px, ${trailPos.y - 14}px, 0)`;
       raf = window.requestAnimationFrame(render);
     };
     raf = window.requestAnimationFrame(render);
@@ -78,7 +78,7 @@ export function NeonCursor() {
         style={{
           position: 'fixed',
           pointerEvents: 'none',
-          transform: `translate3d(${trailPosition.x}px, ${trailPosition.y}px, 0)`,
+          transform: `translate3d(${trailPosition.x - 14}px, ${trailPosition.y - 14}px, 0)`,
         }}
       />
       <div 
@@ -87,7 +87,7 @@ export function NeonCursor() {
         style={{
           position: 'fixed',
           pointerEvents: 'none',
-          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+          transform: `translate3d(${position.x - 7}px, ${position.y - 7}px, 0)`,
           opacity: mounted ? 1 : 0,
         }}
       />
