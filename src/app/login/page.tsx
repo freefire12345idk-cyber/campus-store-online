@@ -29,29 +29,27 @@ export default function LoginPage() {
     try {
       const isEmail = emailOrPhone.includes("@");
       
-      // First, authenticate with NextAuth credentials
+      // Determine redirect URL based on role (we'll let NextAuth handle this)
+      let callbackUrl = "/";
+      
+      // Use NextAuth signIn with redirect: true
       const result = await signIn("credentials", {
         email: isEmail ? emailOrPhone : undefined,
         phone: !isEmail ? emailOrPhone : undefined,
         password,
-        redirect: false, // Don't auto-redirect, we'll handle it manually
+        redirect: true,
+        callbackUrl: callbackUrl,
       });
 
-      if (result.error) {
+      // If redirect: true, we won't get here unless there's an error
+      if (result?.error) {
         setError(result.error || "Login failed");
         return;
       }
-
-      if (!result.user) {
-        setError("Login failed - no user returned");
-        return;
-      }
-
-      // Redirect based on user role
-      redirectByRole(result.user as any);
     } catch (error) {
       console.error("Login error:", error);
       setError("Login failed. Please try again.");
+      alert("Login failed: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setLoading(false);
     }

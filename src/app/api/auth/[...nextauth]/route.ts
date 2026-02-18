@@ -135,9 +135,24 @@ const handler = NextAuth({
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ url, baseUrl, token }) {
       // Use NEXTAUTH_URL for production environment
       const productionUrl = process.env.NEXTAUTH_URL || "https://campus-store-online.vercel.app";
+      
+      // Handle role-based redirects
+      if (token?.role) {
+        if (token.isAdmin) {
+          return `${productionUrl}/admin/dashboard`;
+        } else if (token.role === "student") {
+          return `${productionUrl}/student`;
+        } else if (token.role === "shop_owner") {
+          return `${productionUrl}/shop`;
+        } else if (token.role === "") {
+          return `${productionUrl}/setup-profile`;
+        }
+      }
+      
+      // Default redirect logic
       if (url.startsWith("/")) return `${productionUrl}${url}`;
       if (new URL(url).origin === productionUrl) return url;
       return productionUrl;
