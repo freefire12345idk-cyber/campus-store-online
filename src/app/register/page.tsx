@@ -219,21 +219,29 @@ function RegisterContent() {
     // Shop owner validation
     if (role === "shop_owner") {
       console.log("🔍 Shop validation check", { shopPhotoFile, shopPhotoUrl, paymentQrFile, paymentQrUrl });
-      if (!shopPhotoFile && !shopPhotoUrl) {
-        console.log("❌ Shop photo validation failed");
+      
+      // Check if files are selected OR URLs are set (either one must be true)
+      const hasShopPhoto = shopPhotoFile !== null || shopPhotoUrl !== "";
+      const hasPaymentQr = paymentQrFile !== null || paymentQrUrl !== "";
+      
+      if (!hasShopPhoto) {
+        console.log("❌ Shop photo validation failed - no file or URL");
         setError("Please upload a photo of your shop.");
         return;
       }
-      if (!paymentQrFile && !paymentQrUrl) {
-        console.log("❌ Payment QR validation failed");
+      
+      if (!hasPaymentQr) {
+        console.log("❌ Payment QR validation failed - no file or URL");
         setError("Please upload your payment QR code image.");
         return;
       }
+      
       if (shopLat == null || shopLng == null) {
         console.log("❌ Location validation failed");
         setError("Please tap \"Get my location\" to set your shop location.");
         return;
       }
+      
       if (selectedCollegeIds.length === 0) {
         console.log("❌ College selection validation failed", { selectedCollegeIds });
         setError("Please select at least one college to deliver to");
@@ -256,8 +264,15 @@ function RegisterContent() {
         form.append("file", shopPhotoFile);
         const res = await fetch("/api/upload", { method: "POST", body: form });
         const data = await res.json();
-        console.log("📷 Shop photo upload response:", { ok: res.ok, data });
-        if (res.ok && data.url) finalShopPhotoUrl = data.url;
+        console.log("📷 Shop photo upload response:", { ok: res.ok, data, error: data.error });
+        if (res.ok && data.url) {
+          finalShopPhotoUrl = data.url;
+          console.log("📷 Shop photo URL set:", data.url);
+        } else {
+          console.log("❌ Shop photo upload failed:", data.error || "Unknown error");
+          setError(`Shop photo upload failed: ${data.error || "Unknown error"}`);
+          return;
+        }
       }
       
       if (paymentQrFile && !paymentQrUrl) {
@@ -266,8 +281,15 @@ function RegisterContent() {
         form.append("file", paymentQrFile);
         const res = await fetch("/api/upload", { method: "POST", body: form });
         const data = await res.json();
-        console.log("📱 Payment QR upload response:", { ok: res.ok, data });
-        if (res.ok && data.url) finalPaymentQrUrl = data.url;
+        console.log("📱 Payment QR upload response:", { ok: res.ok, data, error: data.error });
+        if (res.ok && data.url) {
+          finalPaymentQrUrl = data.url;
+          console.log("📱 Payment QR URL set:", data.url);
+        } else {
+          console.log("❌ Payment QR upload failed:", data.error || "Unknown error");
+          setError(`Payment QR upload failed: ${data.error || "Unknown error"}`);
+          return;
+        }
       }
       
       console.log("📋 Preparing API request body...");
@@ -324,8 +346,8 @@ function RegisterContent() {
         console.log("🎓 Redirecting to student dashboard");
         router.push("/student");
       } else if (data.user?.role === "shop_owner") {
-        console.log("🏪 Redirecting to shop dashboard");
-        router.push("/shop");
+        console.log("🏪 Redirecting to pending approval page");
+        router.push("/register/pending-approval");
       } else {
         console.log("🏠 Redirecting to home");
         router.push("/");
