@@ -6,6 +6,35 @@ import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/db";
 import { createSession } from "@/lib/auth";
 
+// Extend the built-in session types
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      role?: string;
+      isAdmin?: boolean;
+      isBanned?: boolean;
+    }
+  }
+
+  interface User {
+    role?: string;
+    isAdmin?: boolean;
+    isBanned?: boolean;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: string;
+    isAdmin?: boolean;
+    isBanned?: boolean;
+  }
+}
+
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -44,6 +73,24 @@ const handler = NextAuth({
         return true;
       }
       return true;
+    },
+    async jwt({ token, user }) {
+      // Persist role from database to JWT token
+      if (user) {
+        token.role = user.role;
+        token.isAdmin = user.isAdmin;
+        token.isBanned = user.isBanned;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Sync role from JWT token to session object
+      if (token && session.user) {
+        session.user.role = token.role;
+        session.user.isAdmin = token.isAdmin;
+        session.user.isBanned = token.isBanned;
+      }
+      return session;
     },
     async redirect({ url, baseUrl }) {
       // Use NEXTAUTH_URL for production environment

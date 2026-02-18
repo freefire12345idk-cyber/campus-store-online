@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { NeonButton } from "@/components/NeonButton";
 
@@ -76,11 +76,23 @@ function RegisterContent() {
   const [paymentQrFile, setPaymentQrFile] = useState<File | null>(null);
   const [paymentQrUrl, setPaymentQrUrl] = useState("");
   const [selectedCollegeIds, setSelectedCollegeIds] = useState<string[]>([]);
+  const [modalImage, setModalImage] = useState<string | null>(null);
+  const [modalTitle, setModalTitle] = useState<string>("");
 
   function toggleCollege(id: string) {
     setSelectedCollegeIds((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
     );
+  }
+
+  function openModal(imageUrl: string, title: string) {
+    setModalImage(imageUrl);
+    setModalTitle(title);
+  }
+
+  function closeModal() {
+    setModalImage(null);
+    setModalTitle("");
   }
 
   function getShopLocation() {
@@ -552,7 +564,10 @@ function RegisterContent() {
                   className="mt-1 block w-full text-sm text-stone-500 file:mr-2 file:rounded file:border-0 file:bg-campus-primary file:px-3 file:py-1.5 file:text-white"
                 />
                 {shopPhotoUrl && (
-                  <div className="mt-2 h-24 w-24 overflow-hidden rounded border relative">
+                  <div 
+                    className="mt-2 h-24 w-24 overflow-hidden rounded border relative cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => openModal(shopPhotoUrl, "Shop Photo")}
+                  >
                     <Image src={shopPhotoUrl} alt="Shop" fill sizes="96px" className="object-cover" />
                   </div>
                 )}
@@ -620,7 +635,10 @@ function RegisterContent() {
                   className="mt-1 block w-full text-sm text-stone-500 file:mr-2 file:rounded file:border-0 file:bg-campus-primary file:px-3 file:py-1.5 file:text-white"
                 />
                 {paymentQrUrl && (
-                  <div className="mt-2 h-24 w-24 overflow-hidden rounded border relative">
+                  <div 
+                    className="mt-2 h-24 w-24 overflow-hidden rounded border relative cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => openModal(paymentQrUrl, "Payment QR Code")}
+                  >
                     <Image src={paymentQrUrl} alt="QR" fill sizes="96px" className="object-contain" />
                   </div>
                 )}
@@ -716,6 +734,57 @@ function RegisterContent() {
           Already have an account? <Link href="/login" className="text-campus-primary font-medium">Login</Link>
         </p>
       </motion.div>
+
+      {/* Image Zoom Modal */}
+      <AnimatePresence>
+        {modalImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            onClick={closeModal}
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="relative z-10 bg-white rounded-lg p-4 max-w-4xl max-h-[90vh] overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className="absolute top-2 right-2 z-20 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 rounded-full p-2 transition-colors"
+                aria-label="Close modal"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
+              {/* Modal Header */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">{modalTitle}</h3>
+              </div>
+              
+              {/* Image Container */}
+              <div className="relative flex items-center justify-center">
+                <img
+                  src={modalImage}
+                  alt={modalTitle}
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
