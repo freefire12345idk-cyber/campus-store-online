@@ -33,7 +33,10 @@ export default function StudentLayout({
 
   async function logout() {
     try {
-      await signOut({ callbackUrl: '/login' });
+      await signOut({ 
+        callbackUrl: '/login',
+        redirect: true 
+      });
       router.refresh();
     } catch (error) {
       console.error("Logout error:", error);

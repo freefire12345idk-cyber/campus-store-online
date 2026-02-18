@@ -48,7 +48,10 @@ export default function HomePage() {
                   type="button"
                   onClick={async () => {
                     try {
-                      await signOut({ callbackUrl: '/login' });
+                      await signOut({ 
+                        callbackUrl: '/login',
+                        redirect: true 
+                      });
                       router.refresh();
                     } catch (error) {
                       console.error("Logout error:", error);
