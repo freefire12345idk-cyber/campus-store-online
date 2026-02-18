@@ -11,7 +11,7 @@ export default function Navbar({ userRole, onLogout }: NavbarProps) {
   const handleLogout = async () => {
     try {
       await signOut({ 
-        callbackUrl: '/login',
+        callbackUrl: '/', 
         redirect: true 
       });
       if (onLogout) onLogout();
@@ -20,6 +20,8 @@ export default function Navbar({ userRole, onLogout }: NavbarProps) {
       // Fallback to custom logout
       await fetch("/api/auth/logout", { method: "POST" });
       if (onLogout) onLogout();
+      // Force redirect to landing page
+      window.location.href = '/';
     }
   };
 

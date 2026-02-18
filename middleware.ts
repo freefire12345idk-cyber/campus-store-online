@@ -9,7 +9,8 @@ export function middleware(request: NextRequest) {
   const isProtectedRoute = pathname.startsWith('/student') || 
                            pathname.startsWith('/shop') || 
                            pathname.startsWith('/admin') ||
-                           pathname.startsWith('/dashboard');
+                           pathname.startsWith('/dashboard') ||
+                           pathname.startsWith('/api/me');
   
   // Check for session cookies
   const sessionCookie = request.cookies.get('next-auth.session-token');
@@ -32,6 +33,13 @@ export function middleware(request: NextRequest) {
   // Add performance headers
   const response = NextResponse.next();
   
+  // Add cache control headers for dashboard routes to prevent browser caching
+  if (isProtectedRoute) {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+  }
+  
   // Cache static assets
   if (request.nextUrl.pathname.startsWith('/_next/static')) {
     response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
@@ -42,8 +50,8 @@ export function middleware(request: NextRequest) {
     response.headers.set('Cache-Control', 'public, max-age=86400');
   }
   
-  // Cache API responses for 5 minutes
-  if (request.nextUrl.pathname.startsWith('/api')) {
+  // Cache API responses for 5 minutes (except protected ones)
+  if (request.nextUrl.pathname.startsWith('/api') && !isProtectedRoute) {
     response.headers.set('Cache-Control', 'public, max-age=300');
   }
   

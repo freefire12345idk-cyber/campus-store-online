@@ -22,7 +22,9 @@ const handler = NextAuth({
             data: {
               email: nextAuthUser.email!,
               name: nextAuthUser.name ?? undefined,
-              role: null,
+              role: "",
+              phone: "",
+              password: "",
             },
           });
         }
@@ -44,9 +46,11 @@ const handler = NextAuth({
       return true;
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      if (new URL(url).origin === baseUrl) return url;
-      return baseUrl;
+      // Use NEXTAUTH_URL for production environment
+      const productionUrl = process.env.NEXTAUTH_URL || baseUrl;
+      if (url.startsWith("/")) return `${productionUrl}${url}`;
+      if (new URL(url).origin === productionUrl) return url;
+      return productionUrl;
     },
   },
   pages: {
