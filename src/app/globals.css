@@ -22,7 +22,7 @@ body {
 }
 
 .neon-cursor {
-  position: fixed;
+  position: fixed !important;
   top: 0;
   left: 0;
   width: 14px;
@@ -48,7 +48,7 @@ body {
 }
 
 .neon-cursor-trail {
-  position: fixed;
+  position: fixed !important;
   top: 0;
   left: 0;
   width: 28px;

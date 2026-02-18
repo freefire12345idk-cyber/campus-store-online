@@ -53,18 +53,49 @@ const handler = NextAuth({
         try {
           const { email, phone, password } = credentials as any;
           const loginId = email?.trim() || phone?.trim();
-          if (!loginId || !password) return null;
+          
+          console.log("🔍 Attempting login for:", { email, phone, loginId });
+          
+          if (!loginId || !password) {
+            console.log("❌ Missing loginId or password");
+            return null;
+          }
           
           const isEmail = String(loginId).includes("@");
+          console.log("📧 Is email login:", isEmail);
+          
           const user = await prisma.user.findFirst({
             where: isEmail ? { email: loginId } : { phone: loginId },
             include: { student: true, shopOwner: { include: { shop: true } } },
           });
           
-          if (!user) return null;
-          if (!user.password) return null;
-          if (!(await verifyPassword(password, user.password))) return null;
+          console.log("👤 User found in DB:", user ? {
+            id: user.id,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+            isAdmin: user.isAdmin,
+            hasPassword: !!user.password
+          } : null);
           
+          if (!user) {
+            console.log("❌ User not found in database");
+            return null;
+          }
+          if (!user.password) {
+            console.log("❌ User has no password (likely Google account)");
+            return null;
+          }
+          
+          const isCorrectPassword = await verifyPassword(password, user.password);
+          console.log("🔐 Password Match:", isCorrectPassword);
+          
+          if (!isCorrectPassword) {
+            console.log("❌ Password verification failed");
+            return null;
+          }
+          
+          console.log("✅ Login successful, returning user object");
           return {
             id: user.id,
             email: user.email,
@@ -79,7 +110,7 @@ const handler = NextAuth({
             collegeId: user.student?.collegeId,
           };
         } catch (error) {
-          console.error("Credentials authorize error:", error);
+          console.error("❌ Credentials authorize error:", error);
           return null;
         }
       },
