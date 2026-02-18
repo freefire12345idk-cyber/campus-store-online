@@ -72,8 +72,12 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes);
     const dir = path.join(process.cwd(), "public", "uploads");
     
+    console.log("📁 Upload directory:", dir);
+    console.log("📄 File details:", { filename: file.name, size: file.size, type: file.type });
+    
     try {
       await mkdir(dir, { recursive: true });
+      console.log("✅ Upload directory created/verified");
     } catch (mkdirError) {
       console.error("❌ Failed to create uploads directory:", mkdirError);
       return NextResponse.json({ error: "Permission denied: Cannot create upload directory" }, { status: 500 });
@@ -84,13 +88,25 @@ export async function POST(req: Request) {
     const filename = customFilename || `upload-${Date.now()}${ext}`;
     const filePath = path.join(dir, filename);
     
+    console.log("🎯 Target file path:", filePath);
+    
     try {
       // Check if file exists and overwrite (for shop photo updates)
       await writeFile(filePath, buffer);
-      console.log("✅ File uploaded successfully:", { filename, ip, size: file.size });
+      console.log("✅ File uploaded successfully:", { filename, ip, size: file.size, filePath });
     } catch (writeError) {
       console.error("❌ Failed to write file:", writeError);
-      return NextResponse.json({ error: "Permission denied: Cannot write file" }, { status: 500 });
+      const error = writeError as Error;
+      console.error("❌ Write error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+        path: filePath,
+        dir: dir
+      });
+      return NextResponse.json({ 
+        error: `Permission denied: Cannot write file. Error: ${error.message}` 
+      }, { status: 500 });
     }
     
     const url = `/uploads/${filename}`;
