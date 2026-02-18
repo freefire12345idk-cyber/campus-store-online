@@ -89,6 +89,8 @@ export async function POST(req: Request) {
     const filePath = path.join(dir, filename);
     
     console.log("🎯 Target file path:", filePath);
+    console.log("🎯 Filename:", filename);
+    console.log("🎯 Extension:", ext);
     
     try {
       // Check if file exists and overwrite (for shop photo updates)

@@ -527,10 +527,9 @@ function RegisterContent() {
                     setShopPhotoFile(file);
                     console.log("📷 Shop photo state updated");
                     
-                    // Create unique filename
+                    // Create unique filename (simplified format)
                     const timestamp = Date.now();
-                    const randomId = Math.random().toString(36).substring(2, 8);
-                    const uniqueFilename = `shop_${randomId}_${timestamp}_photo.${file.name.split('.').pop()}`;
+                    const uniqueFilename = `shop_photo_${timestamp}.${file.name.split('.').pop()}`;
                     
                     const form = new FormData();
                     form.append("file", file);
@@ -596,10 +595,9 @@ function RegisterContent() {
                     setPaymentQrFile(file);
                     console.log("📱 Payment QR state updated");
                     
-                    // Create unique filename
+                    // Create unique filename (simplified format)
                     const timestamp = Date.now();
-                    const randomId = Math.random().toString(36).substring(2, 8);
-                    const uniqueFilename = `shop_${randomId}_${timestamp}_qr.${file.name.split('.').pop()}`;
+                    const uniqueFilename = `shop_qr_${timestamp}.${file.name.split('.').pop()}`;
                     
                     const form = new FormData();
                     form.append("file", file);
