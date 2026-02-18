@@ -2,8 +2,50 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
+// Simple in-memory rate limiting store
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Rate limiting function (5 uploads per hour per IP)
+function checkRateLimit(ip: string): { allowed: boolean; resetTime?: number } {
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+  
+  const record = rateLimitStore.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    // First request or expired record
+    rateLimitStore.set(ip, { count: 1, resetTime: now + oneHour });
+    return { allowed: true };
+  }
+  
+  if (record.count >= 5) {
+    return { allowed: false, resetTime: record.resetTime };
+  }
+  
+  // Increment count
+  rateLimitStore.set(ip, { count: record.count + 1, resetTime: record.resetTime });
+  return { allowed: true };
+}
+
 export async function POST(req: Request) {
   try {
+    // Get client IP for rate limiting
+    const ip = req.headers.get('x-forwarded-for') || 
+               req.headers.get('x-real-ip') || 
+               'unknown';
+    
+    console.log("🔍 Upload request from IP:", ip);
+    
+    // Check rate limit
+    const rateLimit = checkRateLimit(ip);
+    if (!rateLimit.allowed) {
+      const resetTime = new Date(rateLimit.resetTime!).toLocaleTimeString();
+      console.log("🚫 Rate limit exceeded for IP:", ip);
+      return NextResponse.json({ 
+        error: `Rate limit exceeded. Please try again after ${resetTime}. Maximum 5 uploads per hour.` 
+      }, { status: 429 });
+    }
+    
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const customFilename = formData.get("filename") as string | null;
@@ -15,13 +57,15 @@ export async function POST(req: Request) {
     // Check file size (limit to 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
+      console.log("❌ File too large:", { size: file.size, maxSize });
       return NextResponse.json({ error: "File too large. Maximum size is 5MB" }, { status: 400 });
     }
     
-    // Check file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    // Check file type - stricter validation
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: "Invalid file type. Only images are allowed" }, { status: 400 });
+      console.log("❌ Invalid file type:", { type: file.type });
+      return NextResponse.json({ error: "Invalid file type. Only JPG, JPEG, and PNG files are allowed" }, { status: 400 });
     }
     
     const bytes = await file.arrayBuffer();
@@ -41,16 +85,22 @@ export async function POST(req: Request) {
     const filePath = path.join(dir, filename);
     
     try {
+      // Check if file exists and overwrite (for shop photo updates)
       await writeFile(filePath, buffer);
+      console.log("✅ File uploaded successfully:", { filename, ip, size: file.size });
     } catch (writeError) {
       console.error("❌ Failed to write file:", writeError);
       return NextResponse.json({ error: "Permission denied: Cannot write file" }, { status: 500 });
     }
     
     const url = `/uploads/${filename}`;
-    console.log("✅ File uploaded successfully:", { filename, url, size: file.size });
     
-    return NextResponse.json({ url, filename });
+    return NextResponse.json({ 
+      url, 
+      filename,
+      message: "File uploaded successfully",
+      remainingUploads: 5 - (rateLimitStore.get(ip)?.count || 0)
+    });
   } catch (e) {
     console.error("❌ Upload error:", e);
     return NextResponse.json({ error: "Upload failed due to server error" }, { status: 500 });

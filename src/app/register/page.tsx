@@ -494,11 +494,36 @@ function RegisterContent() {
                 <p className="text-xs text-stone-500">Upload a photo of your shop. Admin will verify before approving.</p>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     console.log("📷 Shop photo file selected:", { file, name: file?.name, size: file?.size });
                     if (!file) return;
+                    
+                    // Frontend file size check (5MB limit)
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    if (file.size > maxSize) {
+                      console.log("❌ Shop photo too large:", { size: file.size, maxSize });
+                      setError("File too large! Please upload under 5MB");
+                      // Clear the input
+                      e.target.value = '';
+                      setShopPhotoFile(null);
+                      setShopPhotoUrl("");
+                      return;
+                    }
+                    
+                    // MIME type check
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(file.type)) {
+                      console.log("❌ Invalid file type:", { type: file.type });
+                      setError("Only JPG, JPEG, and PNG files are allowed");
+                      // Clear the input
+                      e.target.value = '';
+                      setShopPhotoFile(null);
+                      setShopPhotoUrl("");
+                      return;
+                    }
+                    
                     setShopPhotoFile(file);
                     console.log("📷 Shop photo state updated");
                     
@@ -520,6 +545,9 @@ function RegisterContent() {
                     } else {
                       console.log("❌ Shop photo upload failed:", data.error || "Unknown error");
                       setError(`Shop photo upload failed: ${data.error || "Unknown error"}`);
+                      // Clear the input on failure
+                      e.target.value = '';
+                      setShopPhotoFile(null);
                     }
                   }}
                   className="mt-1 block w-full text-sm text-stone-500 file:mr-2 file:rounded file:border-0 file:bg-campus-primary file:px-3 file:py-1.5 file:text-white"
@@ -535,11 +563,36 @@ function RegisterContent() {
                 <p className="text-xs text-stone-500">Upload a clear photo of your payment scanner/QR so students can pay you.</p>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     console.log("📱 Payment QR file selected:", { file, name: file?.name, size: file?.size });
                     if (!file) return;
+                    
+                    // Frontend file size check (5MB limit)
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    if (file.size > maxSize) {
+                      console.log("❌ Payment QR too large:", { size: file.size, maxSize });
+                      setError("File too large! Please upload under 5MB");
+                      // Clear the input
+                      e.target.value = '';
+                      setPaymentQrFile(null);
+                      setPaymentQrUrl("");
+                      return;
+                    }
+                    
+                    // MIME type check
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(file.type)) {
+                      console.log("❌ Invalid file type:", { type: file.type });
+                      setError("Only JPG, JPEG, and PNG files are allowed");
+                      // Clear the input
+                      e.target.value = '';
+                      setPaymentQrFile(null);
+                      setPaymentQrUrl("");
+                      return;
+                    }
+                    
                     setPaymentQrFile(file);
                     console.log("📱 Payment QR state updated");
                     
@@ -561,6 +614,9 @@ function RegisterContent() {
                     } else {
                       console.log("❌ Payment QR upload failed:", data.error || "Unknown error");
                       setError(`Payment QR upload failed: ${data.error || "Unknown error"}`);
+                      // Clear the input on failure
+                      e.target.value = '';
+                      setPaymentQrFile(null);
                     }
                   }}
                   className="mt-1 block w-full text-sm text-stone-500 file:mr-2 file:rounded file:border-0 file:bg-campus-primary file:px-3 file:py-1.5 file:text-white"
