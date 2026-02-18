@@ -84,7 +84,7 @@ export default function AdminLayout({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25 }}
-              className="mx-auto max-w-6xl px-4 py-6"
+              className="mx-auto max-w-6xl px-4 py-6 overflow-y-auto"
             >
               {children}
             </motion.main>

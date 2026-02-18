@@ -159,7 +159,7 @@ export default function AdminDashboardPage() {
   if (loading) return <p className="text-stone-500">Loading…</p>;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 pb-20">
       <h1 className="text-2xl font-bold text-stone-900">Admin Dashboard</h1>
 
       <section className="grid gap-4 md:grid-cols-3">
