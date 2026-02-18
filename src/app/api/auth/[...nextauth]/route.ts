@@ -3,8 +3,9 @@ export const dynamic = 'force-dynamic';
 
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db";
-import { createSession } from "@/lib/auth";
+import { createSession, verifyPassword } from "@/lib/auth";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -40,6 +41,48 @@ const handler = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+    }),
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        phone: { label: "Phone", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        try {
+          const { email, phone, password } = credentials as any;
+          const loginId = email?.trim() || phone?.trim();
+          if (!loginId || !password) return null;
+          
+          const isEmail = String(loginId).includes("@");
+          const user = await prisma.user.findFirst({
+            where: isEmail ? { email: loginId } : { phone: loginId },
+            include: { student: true, shopOwner: { include: { shop: true } } },
+          });
+          
+          if (!user) return null;
+          if (!user.password) return null;
+          if (!(await verifyPassword(password, user.password))) return null;
+          
+          return {
+            id: user.id,
+            email: user.email,
+            phone: user.phone,
+            name: user.name,
+            role: user.role,
+            isAdmin: user.isAdmin,
+            isBanned: user.isBanned,
+            studentId: user.student?.id,
+            shopOwnerId: user.shopOwner?.id,
+            shopId: user.shopOwner?.shopId,
+            collegeId: user.student?.collegeId,
+          };
+        } catch (error) {
+          console.error("Credentials authorize error:", error);
+          return null;
+        }
+      },
     }),
   ],
   callbacks: {

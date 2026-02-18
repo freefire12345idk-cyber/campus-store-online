@@ -28,19 +28,30 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const isEmail = emailOrPhone.includes("@");
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          isEmail ? { email: emailOrPhone, password } : { phone: emailOrPhone, password }
-        ),
+      
+      // First, authenticate with NextAuth credentials
+      const result = await signIn("credentials", {
+        email: isEmail ? emailOrPhone : undefined,
+        phone: !isEmail ? emailOrPhone : undefined,
+        password,
+        redirect: false, // Don't auto-redirect, we'll handle it manually
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login failed");
+
+      if (result.error) {
+        setError(result.error || "Login failed");
         return;
       }
-      redirectByRole(data.user || {});
+
+      if (!result.user) {
+        setError("Login failed - no user returned");
+        return;
+      }
+
+      // Redirect based on user role
+      redirectByRole(result.user as any);
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
