@@ -501,14 +501,25 @@ function RegisterContent() {
                     if (!file) return;
                     setShopPhotoFile(file);
                     console.log("📷 Shop photo state updated");
+                    
+                    // Create unique filename
+                    const timestamp = Date.now();
+                    const randomId = Math.random().toString(36).substring(2, 8);
+                    const uniqueFilename = `shop_${randomId}_${timestamp}_photo.${file.name.split('.').pop()}`;
+                    
                     const form = new FormData();
                     form.append("file", file);
+                    form.append("filename", uniqueFilename); // Add unique filename
+                    
                     const res = await fetch("/api/upload", { method: "POST", body: form });
                     const data = await res.json();
-                    console.log("📷 Shop photo upload result:", { ok: res.ok, data });
+                    console.log("📷 Shop photo upload response:", { ok: res.ok, data, error: data.error });
                     if (res.ok && data.url) {
                       setShopPhotoUrl(data.url);
                       console.log("📷 Shop photo URL set:", data.url);
+                    } else {
+                      console.log("❌ Shop photo upload failed:", data.error || "Unknown error");
+                      setError(`Shop photo upload failed: ${data.error || "Unknown error"}`);
                     }
                   }}
                   className="mt-1 block w-full text-sm text-stone-500 file:mr-2 file:rounded file:border-0 file:bg-campus-primary file:px-3 file:py-1.5 file:text-white"
@@ -531,14 +542,25 @@ function RegisterContent() {
                     if (!file) return;
                     setPaymentQrFile(file);
                     console.log("📱 Payment QR state updated");
+                    
+                    // Create unique filename
+                    const timestamp = Date.now();
+                    const randomId = Math.random().toString(36).substring(2, 8);
+                    const uniqueFilename = `shop_${randomId}_${timestamp}_qr.${file.name.split('.').pop()}`;
+                    
                     const form = new FormData();
                     form.append("file", file);
+                    form.append("filename", uniqueFilename); // Add unique filename
+                    
                     const res = await fetch("/api/upload", { method: "POST", body: form });
                     const data = await res.json();
-                    console.log("📱 Payment QR upload result:", { ok: res.ok, data });
+                    console.log("📱 Payment QR upload response:", { ok: res.ok, data, error: data.error });
                     if (res.ok && data.url) {
                       setPaymentQrUrl(data.url);
                       console.log("📱 Payment QR URL set:", data.url);
+                    } else {
+                      console.log("❌ Payment QR upload failed:", data.error || "Unknown error");
+                      setError(`Payment QR upload failed: ${data.error || "Unknown error"}`);
                     }
                   }}
                   className="mt-1 block w-full text-sm text-stone-500 file:mr-2 file:rounded file:border-0 file:bg-campus-primary file:px-3 file:py-1.5 file:text-white"

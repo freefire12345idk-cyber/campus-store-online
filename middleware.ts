@@ -6,9 +6,10 @@ export function middleware(request: NextRequest) {
   
   // Check if user is authenticated for protected routes
   const { pathname } = request.nextUrl;
+  const isAdminRoute = pathname.startsWith('/admin');
   const isProtectedRoute = pathname.startsWith('/student') || 
                            pathname.startsWith('/shop') || 
-                           pathname.startsWith('/admin') ||
+                           isAdminRoute ||
                            pathname.startsWith('/dashboard') ||
                            pathname.startsWith('/api/me');
   
@@ -20,6 +21,7 @@ export function middleware(request: NextRequest) {
   // Log environment variables for debugging
   console.log('🔍 Middleware Debug:', {
     pathname,
+    isAdminRoute,
     isProtectedRoute,
     hasSession,
     sessionCookie: !!sessionCookie,
@@ -33,6 +35,9 @@ export function middleware(request: NextRequest) {
     console.log(`🔒 Blocking access to ${pathname} - no session found`);
     return NextResponse.redirect(new URL('/login', request.url));
   }
+  
+  // For admin routes, we need to check role via API since middleware can't access database
+  // This is handled in the admin layout component
   
   // Add performance headers
   const response = NextResponse.next();

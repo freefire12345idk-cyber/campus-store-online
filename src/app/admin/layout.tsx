@@ -24,7 +24,7 @@ export default function AdminLayout({
         .then((r) => r.json())
         .then((u) => {
           setUser(u);
-          if (u.error || !u.isAdmin || u.isBanned) {
+          if (u.error || u.role !== "ADMIN" || u.isBanned) {
             console.log("🔒 Admin access denied, redirecting to login");
             router.push("/login");
           } else {
