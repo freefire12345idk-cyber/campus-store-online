@@ -4,14 +4,24 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const start = Date.now();
   
+  // Check if user is authenticated for protected routes
   const { pathname } = request.nextUrl;
   const isProtectedRoute = pathname.startsWith('/student') || 
                            pathname.startsWith('/shop') || 
                            pathname.startsWith('/admin') ||
                            pathname.startsWith('/dashboard');
   
-  // Check for session cookies instead of JWT token
+  // Check for session cookies
   const sessionCookie = request.cookies.get('next-auth.session-token');
+  
+  // Log environment variables for debugging
+  console.log('🔍 Middleware Debug:', {
+    pathname,
+    isProtectedRoute,
+    hasSessionCookie: !!sessionCookie,
+    nextAuthUrl: process.env.NEXTAUTH_URL,
+    nodeEnv: process.env.NODE_ENV
+  });
   
   // If trying to access protected route without authentication, redirect to login
   if (isProtectedRoute && !sessionCookie) {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { NeonButton } from "@/components/NeonButton";
 import NotificationBell from "@/components/NotificationBell";
+import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
 
 export default function HomePage() {
@@ -44,40 +45,7 @@ export default function HomePage() {
                 {user.role === "student" && <Link href="/student" className="text-stone-300 hover:text-campus-primary">Shops</Link>}
                 {user.role === "shop_owner" && <Link href="/shop" className="text-stone-300 hover:text-campus-primary">My Shop</Link>}
                 <NotificationBell />
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      // Try force logout first
-                      const forceLogout = await fetch("/api/auth/force-logout", { 
-                        method: "POST" 
-                      });
-                      const result = await forceLogout.json();
-                      console.log("Force logout result:", result);
-                      
-                      if (result.success) {
-                        window.location.href = "/login";
-                        return;
-                      }
-                      
-                      // Fallback to NextAuth if force logout fails
-                      await signOut({ 
-                        callbackUrl: '/login',
-                        redirect: true 
-                      });
-                      router.refresh();
-                    } catch (error) {
-                      console.error("Logout error:", error);
-                      // Final fallback to custom logout
-                      await fetch("/api/auth/logout", { method: "POST" });
-                      router.refresh();
-                      window.location.href = "/login";
-                    }
-                  }}
-                  className="text-stone-300 hover:text-campus-primary"
-                >
-                  Logout (Force)
-                </button>
+                <Navbar userRole={user.role} />
               </>
             ) : (
               <>

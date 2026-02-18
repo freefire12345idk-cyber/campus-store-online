@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
 
 export default function AdminLayout({
   children,
@@ -50,7 +51,7 @@ export default function AdminLayout({
             <Link href="/admin/dashboard" className={pathname === "/admin/dashboard" ? "text-amber-700 font-medium" : "text-stone-600"}>Dashboard</Link>
             <Link href="/admin/reports" className={pathname === "/admin/reports" ? "text-amber-700 font-medium" : "text-stone-600"}>Reports</Link>
             <Link href="/admin/support" className={pathname === "/admin/support" ? "text-amber-700 font-medium" : "text-stone-600"}>Support</Link>
-            <button type="button" onClick={logout} className="text-sm text-stone-500 hover:text-stone-700">Logout</button>
+            <Navbar userRole="admin" />
           </nav>
         </div>
       </header>

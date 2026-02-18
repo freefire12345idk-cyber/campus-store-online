@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
 
 export default function StudentLayout({
   children,
@@ -65,7 +66,7 @@ export default function StudentLayout({
                 </span>
               )}
             </Link>
-            <button type="button" onClick={logout} className="text-sm text-stone-500 hover:text-stone-700">Logout</button>
+            <Navbar userRole="student" />
           </nav>
         </div>
       </header>
