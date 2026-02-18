@@ -1,26 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { NeonButton } from "@/components/NeonButton";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function redirectByRole(user: { role?: string; isAdmin?: boolean; shopId?: string }) {
-    if (user?.isAdmin) router.push("/admin/dashboard");
-    else if (user?.role === "student") router.push("/student");
-    else if (user?.role === "shop_owner") router.push("/shop");
-    else if (!user?.role || user.role === "") router.push("/setup-profile");
-    else router.push("/");
+  // Handle redirect after successful login
+  function redirectByRole(session: any) {
+    if (!session?.user) return;
+    
+    const userRole = session.user.role?.toUpperCase();
+    console.log("🔍 Redirecting based on role:", userRole, session.user);
+    
+    if (session.user.isAdmin) {
+      console.log("👨‍💼 Redirecting to admin dashboard");
+      router.push("/admin/dashboard");
+    } else if (userRole === "SHOP_OWNER") {
+      console.log("🏪 Redirecting to shop dashboard");
+      router.push("/shop");
+    } else if (userRole === "STUDENT") {
+      console.log("🎓 Redirecting to student home");
+      router.push("/student");
+    } else if (!session.user.role || session.user.role === "") {
+      console.log("📝 Redirecting to setup profile");
+      router.push("/setup-profile");
+    } else {
+      console.log("🏠 Redirecting to home");
+      router.push("/");
+    }
   }
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      redirectByRole(session);
+    }
+  }, [status, session, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,23 +54,38 @@ export default function LoginPage() {
     try {
       const isEmail = emailOrPhone.includes("@");
       
-      // Determine redirect URL based on role (we'll let NextAuth handle this)
-      let callbackUrl = "/";
-      
-      // Use NextAuth signIn with redirect: true
+      // Use NextAuth signIn with redirect: false to handle manual redirect
       const result = await signIn("credentials", {
         email: isEmail ? emailOrPhone : undefined,
         phone: !isEmail ? emailOrPhone : undefined,
         password,
-        redirect: true,
-        callbackUrl: callbackUrl,
+        redirect: false, // Don't auto-redirect, we'll handle it manually
       });
 
-      // If redirect: true, we won't get here unless there's an error
+      console.log("🔍 SignIn result:", result);
+
       if (result?.error) {
         setError(result.error || "Login failed");
+        alert("Login failed: " + result.error);
         return;
       }
+
+      if (!result) {
+        setError("Login failed - no result returned");
+        alert("Login failed: No result returned");
+        return;
+      }
+
+      // Wait a moment for session to be updated
+      setTimeout(() => {
+        // Check session and redirect based on role
+        if (status === "authenticated" && session) {
+          redirectByRole(session);
+        } else {
+          setError("Login successful but session not available. Please try again.");
+          alert("Login successful but session not available. Please try again.");
+        }
+      }, 100);
     } catch (error) {
       console.error("Login error:", error);
       setError("Login failed. Please try again.");
