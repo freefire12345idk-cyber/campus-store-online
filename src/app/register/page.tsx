@@ -71,7 +71,9 @@ function RegisterContent() {
   const [shopLng, setShopLng] = useState<number | null>(null);
   const [locationError, setLocationError] = useState("");
   const [shopPhone, setShopPhone] = useState("");
+  const [shopPhotoFile, setShopPhotoFile] = useState<File | null>(null);
   const [shopPhotoUrl, setShopPhotoUrl] = useState("");
+  const [paymentQrFile, setPaymentQrFile] = useState<File | null>(null);
   const [paymentQrUrl, setPaymentQrUrl] = useState("");
   const [selectedCollegeIds, setSelectedCollegeIds] = useState<string[]>([]);
 
@@ -192,11 +194,11 @@ function RegisterContent() {
     
     // Shop owner validation
     if (role === "shop_owner") {
-      if (!shopPhotoUrl) {
+      if (!shopPhotoFile && !shopPhotoUrl) {
         setError("Please upload a photo of your shop.");
         return;
       }
-      if (!paymentQrUrl) {
+      if (!paymentQrFile && !paymentQrUrl) {
         setError("Please upload your payment QR code image.");
         return;
       }
@@ -229,6 +231,26 @@ function RegisterContent() {
     }
     setLoading(true);
     try {
+      // Upload files if they exist but URLs don't
+      let finalShopPhotoUrl = shopPhotoUrl;
+      let finalPaymentQrUrl = paymentQrUrl;
+      
+      if (shopPhotoFile && !shopPhotoUrl) {
+        const form = new FormData();
+        form.append("file", shopPhotoFile);
+        const res = await fetch("/api/upload", { method: "POST", body: form });
+        const data = await res.json();
+        if (res.ok && data.url) finalShopPhotoUrl = data.url;
+      }
+      
+      if (paymentQrFile && !paymentQrUrl) {
+        const form = new FormData();
+        form.append("file", paymentQrFile);
+        const res = await fetch("/api/upload", { method: "POST", body: form });
+        const data = await res.json();
+        if (res.ok && data.url) finalPaymentQrUrl = data.url;
+      }
+      
       const url = "/api/auth/register";
       const body =
         role === "student"
@@ -255,8 +277,8 @@ function RegisterContent() {
               shopLat: shopLat!,
               shopLng: shopLng!,
               shopPhone: shopPhone || undefined,
-              shopPhotoUrl,
-              paymentQrUrl,
+              shopPhotoUrl: finalShopPhotoUrl,
+              paymentQrUrl: finalPaymentQrUrl,
               collegeIds: selectedCollegeIds,
               otpVerified,
             };
@@ -415,6 +437,7 @@ function RegisterContent() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
+                    setShopPhotoFile(file);
                     const form = new FormData();
                     form.append("file", file);
                     const res = await fetch("/api/upload", { method: "POST", body: form });
@@ -438,6 +461,7 @@ function RegisterContent() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
+                    setPaymentQrFile(file);
                     const form = new FormData();
                     form.append("file", file);
                     const res = await fetch("/api/upload", { method: "POST", body: form });
