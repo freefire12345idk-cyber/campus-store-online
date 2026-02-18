@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client with service role key
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // Simple in-memory rate limiting store
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -68,54 +73,48 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid file type. Only JPG, JPEG, and PNG files are allowed" }, { status: 400 });
     }
     
+    console.log(" File details:", { filename: file.name, size: file.size, type: file.type });
+    
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const dir = path.join(process.cwd(), "public", "uploads");
-    
-    console.log("📁 Upload directory:", dir);
-    console.log("📄 File details:", { filename: file.name, size: file.size, type: file.type });
-    
-    try {
-      await mkdir(dir, { recursive: true });
-      console.log("✅ Upload directory created/verified");
-    } catch (mkdirError) {
-      console.error("❌ Failed to create uploads directory:", mkdirError);
-      return NextResponse.json({ error: "Permission denied: Cannot create upload directory" }, { status: 500 });
-    }
     
     // Use custom filename if provided, otherwise generate one
-    const ext = path.extname(file.name) || ".jpg";
-    const filename = customFilename || `upload-${Date.now()}${ext}`;
-    const filePath = path.join(dir, filename);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const filename = customFilename || `upload-${Date.now()}.${ext}`;
     
-    console.log("🎯 Target file path:", filePath);
-    console.log("🎯 Filename:", filename);
-    console.log("🎯 Extension:", ext);
+    // Ensure filename doesn't start with / or ./
+    const cleanFilename = filename.startsWith('/') || filename.startsWith('./') 
+      ? filename.replace(/^\.?\//, '') 
+      : filename;
     
-    try {
-      // Check if file exists and overwrite (for shop photo updates)
-      await writeFile(filePath, buffer);
-      console.log("✅ File uploaded successfully:", { filename, ip, size: file.size, filePath });
-    } catch (writeError) {
-      console.error("❌ Failed to write file:", writeError);
-      const error = writeError as Error;
-      console.error("❌ Write error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-        path: filePath,
-        dir: dir
+    console.log("🎯 Uploading to Supabase:", { filename: cleanFilename, bucket: 'qr-codes' });
+    
+    // Upload directly to Supabase storage
+    const { data, error } = await supabase.storage
+      .from('qr-codes')
+      .upload(cleanFilename, buffer, {
+        contentType: file.type,
+        upsert: true // Overwrite if file exists
       });
+    
+    if (error) {
+      console.error("❌ Supabase upload error:", error);
       return NextResponse.json({ 
-        error: `Permission denied: Cannot write file. Error: ${error.message}` 
+        error: `Upload failed: ${error.message}` 
       }, { status: 500 });
     }
     
-    const url = `/uploads/${filename}`;
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('qr-codes')
+      .getPublicUrl(cleanFilename);
+    
+    console.log("✅ File uploaded successfully:", { filename: cleanFilename, publicUrl, ip, size: file.size });
     
     return NextResponse.json({ 
-      url, 
-      filename,
+      url: publicUrl,
+      filename: cleanFilename,
       message: "File uploaded successfully",
       remainingUploads: 5 - (rateLimitStore.get(ip)?.count || 0)
     });
