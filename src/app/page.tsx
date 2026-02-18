@@ -48,6 +48,19 @@ export default function HomePage() {
                   type="button"
                   onClick={async () => {
                     try {
+                      // Try force logout first
+                      const forceLogout = await fetch("/api/auth/force-logout", { 
+                        method: "POST" 
+                      });
+                      const result = await forceLogout.json();
+                      console.log("Force logout result:", result);
+                      
+                      if (result.success) {
+                        window.location.href = "/login";
+                        return;
+                      }
+                      
+                      // Fallback to NextAuth if force logout fails
                       await signOut({ 
                         callbackUrl: '/login',
                         redirect: true 
@@ -55,7 +68,7 @@ export default function HomePage() {
                       router.refresh();
                     } catch (error) {
                       console.error("Logout error:", error);
-                      // Fallback to custom logout if NextAuth fails
+                      // Final fallback to custom logout
                       await fetch("/api/auth/logout", { method: "POST" });
                       router.refresh();
                       window.location.href = "/login";
@@ -63,7 +76,7 @@ export default function HomePage() {
                   }}
                   className="text-stone-300 hover:text-campus-primary"
                 >
-                  Logout
+                  Logout (Force)
                 </button>
               </>
             ) : (
