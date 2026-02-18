@@ -47,7 +47,7 @@ const handler = NextAuth({
     },
     async redirect({ url, baseUrl }) {
       // Use NEXTAUTH_URL for production environment
-      const productionUrl = process.env.NEXTAUTH_URL || baseUrl;
+      const productionUrl = process.env.NEXTAUTH_URL || "https://campus-store-online.vercel.app";
       if (url.startsWith("/")) return `${productionUrl}${url}`;
       if (new URL(url).origin === productionUrl) return url;
       return productionUrl;

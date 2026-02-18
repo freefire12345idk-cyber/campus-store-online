@@ -12,18 +12,29 @@ interface NavbarProps {
 export default function Navbar({ userRole, onLogout, currentPath }: NavbarProps) {
   const handleLogout = async () => {
     try {
+      console.log("🔒 Starting NextAuth signOut...");
       await signOut({ 
         callbackUrl: '/', 
         redirect: true 
       });
+      console.log("✅ NextAuth signOut completed");
       if (onLogout) onLogout();
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("❌ NextAuth signOut error:", error);
       // Fallback to custom logout
-      await fetch("/api/auth/logout", { method: "POST" });
-      if (onLogout) onLogout();
-      // Force redirect to landing page
-      window.location.href = '/';
+      try {
+        console.log("🔄 Trying fallback logout...");
+        const response = await fetch("/api/auth/logout", { method: "POST" });
+        const result = await response.json();
+        console.log("Fallback logout result:", result);
+        if (onLogout) onLogout();
+        // Force redirect to landing page
+        window.location.href = '/';
+      } catch (fallbackError) {
+        console.error("❌ Fallback logout error:", fallbackError);
+        // Final fallback - force redirect
+        window.location.href = '/';
+      }
     }
   };
 

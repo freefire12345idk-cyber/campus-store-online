@@ -12,20 +12,24 @@ export function middleware(request: NextRequest) {
                            pathname.startsWith('/dashboard') ||
                            pathname.startsWith('/api/me');
   
-  // Check for session cookies
+  // Strictly check for session cookies
   const sessionCookie = request.cookies.get('next-auth.session-token');
+  const authjsSessionCookie = request.cookies.get('authjs.session-token');
+  const hasSession = !!(sessionCookie || authjsSessionCookie);
   
   // Log environment variables for debugging
   console.log('🔍 Middleware Debug:', {
     pathname,
     isProtectedRoute,
-    hasSessionCookie: !!sessionCookie,
+    hasSession,
+    sessionCookie: !!sessionCookie,
+    authjsSessionCookie: !!authjsSessionCookie,
     nextAuthUrl: process.env.NEXTAUTH_URL,
     nodeEnv: process.env.NODE_ENV
   });
   
-  // If trying to access protected route without authentication, redirect to login
-  if (isProtectedRoute && !sessionCookie) {
+  // If trying to access protected route without authentication, redirect to login immediately
+  if (isProtectedRoute && !hasSession) {
     console.log(`🔒 Blocking access to ${pathname} - no session found`);
     return NextResponse.redirect(new URL('/login', request.url));
   }
@@ -33,11 +37,12 @@ export function middleware(request: NextRequest) {
   // Add performance headers
   const response = NextResponse.next();
   
-  // Add cache control headers for dashboard routes to prevent browser caching
+  // Add no-cache headers for all protected routes to prevent browser caching
   if (isProtectedRoute) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
   }
   
   // Cache static assets
