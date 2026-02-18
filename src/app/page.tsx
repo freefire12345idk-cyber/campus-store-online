@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { NeonButton } from "@/components/NeonButton";
 import NotificationBell from "@/components/NotificationBell";
 import { motion } from "framer-motion";
@@ -46,9 +47,16 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={async () => {
-                    await fetch("/api/auth/logout", { method: "POST" });
-                    router.refresh();
-                    window.location.href = "/";
+                    try {
+                      await signOut({ callbackUrl: '/login' });
+                      router.refresh();
+                    } catch (error) {
+                      console.error("Logout error:", error);
+                      // Fallback to custom logout if NextAuth fails
+                      await fetch("/api/auth/logout", { method: "POST" });
+                      router.refresh();
+                      window.location.href = "/login";
+                    }
                   }}
                   className="text-stone-300 hover:text-campus-primary"
                 >

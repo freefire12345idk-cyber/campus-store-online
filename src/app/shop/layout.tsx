@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function ShopLayout({
@@ -34,9 +35,16 @@ export default function ShopLayout({
   }, [pathname, router]);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
-    router.refresh();
+    try {
+      await signOut({ callbackUrl: '/login' });
+      router.refresh();
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Fallback to custom logout
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    }
   }
 
   return (
