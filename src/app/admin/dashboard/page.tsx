@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { NeonButton } from "@/components/NeonButton";
 
 const ResponsiveContainer = dynamic(() => import("recharts").then((m: any) => m.ResponsiveContainer), { 
@@ -63,6 +64,18 @@ export default function AdminDashboardPage() {
   const [newCollegeName, setNewCollegeName] = useState("");
   const [newCollegeLat, setNewCollegeLat] = useState("");
   const [newCollegeLng, setNewCollegeLng] = useState("");
+  const [modalImage, setModalImage] = useState<string | null>(null);
+  const [modalTitle, setModalTitle] = useState<string>("");
+
+  const openModal = (imageUrl: string, title: string) => {
+    setModalImage(imageUrl);
+    setModalTitle(title);
+  };
+
+  const closeModal = () => {
+    setModalImage(null);
+    setModalTitle("");
+  };
 
   const loadShops = useCallback(() => {
     return fetch("/api/admin/shops").then((r) => r.json()).then(setShops).catch(() => setShops([]));
@@ -244,7 +257,10 @@ export default function AdminDashboardPage() {
               <li key={shop.id} className="card">
                 <div className="flex flex-wrap gap-4">
                   {shop.shopPhoto && (
-                    <div className="h-28 w-28 overflow-hidden rounded-lg border relative">
+                    <div 
+                      className="h-28 w-28 overflow-hidden rounded-lg border relative cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => openModal(shop.shopPhoto, `${shop.name} - Shop Photo`)}
+                    >
                       <Image src={shop.shopPhoto} alt={shop.name} fill sizes="112px" className="object-cover" />
                     </div>
                   )}
@@ -325,6 +341,57 @@ export default function AdminDashboardPage() {
           ))}
         </div>
       </section>
+
+      {/* Image Zoom Modal */}
+      <AnimatePresence>
+        {modalImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            onClick={closeModal}
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="relative z-10 bg-white rounded-lg p-4 max-w-4xl max-h-[90vh] overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className="absolute top-2 right-2 z-20 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 rounded-full p-2 transition-colors"
+                aria-label="Close modal"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
+              {/* Modal Header */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">{modalTitle}</h3>
+              </div>
+              
+              {/* Image Container */}
+              <div className="relative flex items-center justify-center">
+                <img
+                  src={modalImage}
+                  alt={modalTitle}
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
