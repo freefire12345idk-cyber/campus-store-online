@@ -51,32 +51,37 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
+          console.log("🔍 Login Attempt:", credentials);
+          
           const { email, phone, password } = credentials as any;
-          const loginId = email?.trim() || phone?.trim();
+          const input = email?.trim() || phone?.trim();
           
-          console.log("🔍 Attempting login for:", { email, phone, loginId });
+          console.log("� Input processed:", { email, phone, input });
           
-          if (!loginId || !password) {
-            console.log("❌ Missing loginId or password");
+          if (!input || !password) {
+            console.log("❌ Missing input or password");
             return null;
           }
           
-          const isEmail = String(loginId).includes("@");
+          const isEmail = String(input).includes("@");
           console.log("📧 Is email login:", isEmail);
           
           const user = await prisma.user.findFirst({
-            where: isEmail ? { email: loginId } : { phone: loginId },
+            where: isEmail ? { email: input } : { phone: input },
             include: { student: true, shopOwner: { include: { shop: true } } },
           });
           
-          console.log("👤 User found in DB:", user ? {
-            id: user.id,
-            email: user.email,
-            phone: user.phone,
-            role: user.role,
-            isAdmin: user.isAdmin,
-            hasPassword: !!user.password
-          } : null);
+          console.log("👤 User found in DB:", !!user);
+          if (user) {
+            console.log("👤 User details:", {
+              id: user.id,
+              email: user.email,
+              phone: user.phone,
+              role: user.role,
+              isAdmin: user.isAdmin,
+              hasPassword: !!user.password
+            });
+          }
           
           if (!user) {
             console.log("❌ User not found in database");
@@ -87,15 +92,16 @@ const handler = NextAuth({
             return null;
           }
           
-          const isCorrectPassword = await verifyPassword(password, user.password);
-          console.log("🔐 Password Match:", isCorrectPassword);
+          const isMatch = await verifyPassword(password, user.password);
+          console.log("🔐 Password Match Result:", isMatch);
           
-          if (!isCorrectPassword) {
+          if (!isMatch) {
             console.log("❌ Password verification failed");
             return null;
           }
           
-          console.log("✅ Login successful, returning user object");
+          // ✅ NO ROLE BLOCKING - Allow all roles to pass through
+          console.log("✅ Authentication successful for role:", user.role);
           return {
             id: user.id,
             email: user.email,
