@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { NeonButton } from "@/components/NeonButton";
 import NotificationBell from "@/components/NotificationBell";
 import Navbar from "@/components/Navbar";
@@ -11,26 +11,41 @@ import { motion } from "framer-motion";
 
 export default function HomePage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ role?: string; isAdmin?: boolean; shopId?: string } | null>(null);
+  const { data: session, status } = useSession();
+  const [user, setUser] = useState<{ role?: string; name?: string | null | undefined; email?: string | null | undefined; image?: string | null | undefined } | null>(null);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    fetch("/api/me")
-      .then((r) => r.json())
-      .then((u) => {
-        if (u.error) {
+    if (status === "loading") {
+      setChecking(true);
+      return;
+    }
+    
+    if (status === "authenticated" && session) {
+      setUser({ role: session.user?.role, name: session.user?.name, email: session.user?.email, image: session.user?.image });
+      setChecking(false);
+    } else if (status === "unauthenticated") {
+      setUser(null);
+      setChecking(false);
+    } else {
+      // Fallback to API check
+      fetch("/api/me")
+        .then((r) => r.json())
+        .then((u) => {
+          if (u.error) {
+            setUser(null);
+            setChecking(false);
+            return;
+          }
+          setUser({ role: u.role, name: u.name, email: u.email, image: u.image });
+          setChecking(false);
+        })
+        .catch(() => {
           setUser(null);
           setChecking(false);
-          return;
-        }
-        setUser({ role: u.role, isAdmin: u.isAdmin, shopId: u.shopId });
-        setChecking(false);
-      })
-      .catch(() => {
-        setUser(null);
-        setChecking(false);
-      });
-  }, []);
+        });
+    }
+  }, [session, status]);
 
   if (checking) {
     return (
@@ -99,23 +114,20 @@ export default function HomePage() {
           <h1 className="text-4xl font-bold tracking-tight neon-title sm:text-5xl">
             Order from shops near your college
           </h1>
-          <p className="mt-4 text-lg text-slate-200 leading-relaxed leading-loose">
-            <span className="block mb-3"><strong>Students:</strong> add items to cart, pay via scanner, get delivery at campus.</span>
-            <span className="block"><strong>Shops:</strong> list your store, get orders and deliver to 4–5 colleges.</span>
+          <p className="mt-4 text-stone-400">
+            Get your favorite food, snacks, and daily essentials delivered right to your college campus.
           </p>
-          {!user && (
-            <>
-              <div className="mt-10 flex flex-wrap justify-center gap-4">
-                <NeonButton href="/register?role=student" className="text-lg px-6 py-3">
-                  Register as Student
-                </NeonButton>
-                <NeonButton href="/register?role=shop" variant="secondary" neonColor="#f472b6" className="text-lg px-6 py-3">
-                  Register as Shop
-                </NeonButton>
-              </div>
-              <p className="mt-8 text-slate-300">
-                Already have an account? <Link href="/login" className="text-campus-primary font-medium">Login</Link>
-              </p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <NeonButton href="/student" className="px-6 py-3 text-lg">
+              Browse Shops
+            </NeonButton>
+            <NeonButton href="/register" className="px-6 py-3 text-lg" variant="secondary">
+              Register as Student
+            </NeonButton>
+            <NeonButton href="/register?role=shop" className="px-6 py-3 text-lg" variant="secondary">
+              Register as Shop
+            </NeonButton>
+          </div>
             </>
           )}
           {user && user.role && (
