@@ -32,33 +32,42 @@ export default function StudentLayout({
       .catch(() => {});
   }, [pathname, router]);
 
-  async function logout() {
-    try {
-      await signOut({ 
-        callbackUrl: '/login',
-        redirect: true 
-      });
-      router.refresh();
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Fallback to custom logout
-      await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/login");
-      router.refresh();
-    }
-  }
-
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-10 border-b border-slate-800/70 bg-slate-950/70 backdrop-blur">
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="bg-[#0a0a0a]/90 backdrop-blur-md border-b border-cyan-500/20 sticky top-0 z-50"
+      >
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
           <Link href="/student" className="font-bold text-campus-primary">Campus Store</Link>
           <nav className="flex items-center gap-4">
-            <Link href="/student" className={pathname === "/student" ? "text-campus-primary font-medium" : "text-stone-600"}>Shops</Link>
-            <Link href="/student/cart" className={pathname === "/student/cart" ? "text-campus-primary font-medium" : "text-stone-600"}>Cart</Link>
-            <Link href="/student/orders" className={pathname === "/student/orders" ? "text-campus-primary font-medium" : "text-stone-600"}>Orders</Link>
-            <Link href="/support" className={pathname === "/support" ? "text-campus-primary font-medium" : "text-stone-600"}>Support</Link>
-            <Link href="/student/notifications" className="relative text-stone-600">
+            <Link 
+              href="/student" 
+              className={`${pathname === "/student" ? "text-cyan-400 font-medium" : "text-stone-600"} transition-all duration-300 ease-in-out hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] hover:text-cyan-400 hover:bg-[#0a0a0a]/50 px-3 py-2 rounded-md`}
+            >
+              Shops
+            </Link>
+            <Link 
+              href="/student/cart" 
+              className={`${pathname === "/student/cart" ? "text-cyan-400 font-medium" : "text-stone-600"} transition-all duration-300 ease-in-out hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] hover:text-cyan-400 hover:bg-[#0a0a0a]/50 px-3 py-2 rounded-md`}
+            >
+              Cart
+            </Link>
+            <Link 
+              href="/student/orders" 
+              className={`${pathname === "/student/orders" ? "text-cyan-400 font-medium" : "text-stone-600"} transition-all duration-300 ease-in-out hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] hover:text-cyan-400 hover:bg-[#0a0a0a]/50 px-3 py-2 rounded-md`}
+            >
+              Orders
+            </Link>
+            <Link 
+              href="/support" 
+              className={`${pathname === "/support" ? "text-cyan-400 font-medium" : "text-stone-600"} transition-all duration-300 ease-in-out hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] hover:text-cyan-400 hover:bg-[#0a0a0a]/50 px-3 py-2 rounded-md`}
+            >
+              Support
+            </Link>
+            <Link href="/student/notifications" className="relative text-stone-600 transition-all duration-300 ease-in-out hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] hover:text-cyan-400 hover:bg-[#0a0a0a]/50 px-3 py-2 rounded-md">
               Notifications
               {notifCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
@@ -66,10 +75,10 @@ export default function StudentLayout({
                 </span>
               )}
             </Link>
-            <Navbar userRole="student" />
+            <Navbar userRole="student" currentPath={pathname} />
           </nav>
         </div>
-      </header>
+      </motion.header>
       <AnimatePresence mode="wait">
         <motion.main
           key={pathname}

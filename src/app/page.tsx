@@ -18,12 +18,19 @@ export default function HomePage() {
     fetch("/api/me")
       .then((r) => r.json())
       .then((u) => {
-        if (!u.error && u.role === "") router.replace("/setup-profile");
-        else if (!u.error) setUser(u);
+        if (u.error) {
+          setUser(null);
+          setChecking(false);
+          return;
+        }
+        setUser({ role: u.role, isAdmin: u.isAdmin, shopId: u.shopId });
+        setChecking(false);
       })
-      .catch(() => setUser(null))
-      .finally(() => setChecking(false));
-  }, [router]);
+      .catch(() => {
+        setUser(null);
+        setChecking(false);
+      });
+  }, []);
 
   if (checking) {
     return (
@@ -34,18 +41,44 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-800/70 bg-slate-950/70 backdrop-blur">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="bg-[#0a0a0a]/90 backdrop-blur-md border-b border-cyan-500/20 sticky top-0 z-50"
+      >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <span className="text-xl font-bold text-campus-primary">Campus Store</span>
           <nav className="flex gap-4 items-center">
             {user ? (
               <>
-                {user.isAdmin && <Link href="/admin/dashboard" className="text-stone-300 hover:text-amber-400">Admin</Link>}
-                {user.role === "student" && <Link href="/student" className="text-stone-300 hover:text-campus-primary">Shops</Link>}
-                {user.role === "shop_owner" && <Link href="/shop" className="text-stone-300 hover:text-campus-primary">My Shop</Link>}
+                {user.isAdmin && (
+                  <Link 
+                    href="/admin/dashboard" 
+                    className="text-stone-300 hover:text-amber-400 transition-all duration-300 ease-in-out hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] hover:bg-[#0a0a0a]/50 px-3 py-2 rounded-md"
+                  >
+                    Admin
+                  </Link>
+                )}
+                {user.role === "student" && (
+                  <Link 
+                    href="/student" 
+                    className="text-stone-300 hover:text-cyan-400 transition-all duration-300 ease-in-out hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] hover:bg-[#0a0a0a]/50 px-3 py-2 rounded-md"
+                  >
+                    Shops
+                  </Link>
+                )}
+                {user.role === "shop_owner" && (
+                  <Link 
+                    href="/shop" 
+                    className="text-stone-300 hover:text-cyan-400 transition-all duration-300 ease-in-out hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] hover:bg-[#0a0a0a]/50 px-3 py-2 rounded-md"
+                  >
+                    My Shop
+                  </Link>
+                )}
                 <NotificationBell />
-                <Navbar userRole={user.role} />
+                <Navbar userRole={user.role} currentPath="/" />
               </>
             ) : (
               <>
@@ -55,7 +88,7 @@ export default function HomePage() {
             )}
           </nav>
         </div>
-      </header>
+      </motion.header>
       <main className="mx-auto max-w-6xl px-4 py-16 text-center">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
