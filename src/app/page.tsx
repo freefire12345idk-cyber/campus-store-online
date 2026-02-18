@@ -128,8 +128,6 @@ export default function HomePage() {
               Register as Shop
             </NeonButton>
           </div>
-            </>
-          )}
           {user && user.role && (
             <div className="mt-10">
               <NeonButton href={user.role === "student" ? "/student" : "/shop"} className="text-lg px-6 py-3">
